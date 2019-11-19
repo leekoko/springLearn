@@ -1,8 +1,8 @@
 package org.litespring.beans.factory;
-import org.litespring.beans.BeanDefinition;
 
+/**
+ * 负责获取bean
+ */
 public interface BeanFactory {
-    BeanDefinition getBeanDefinition(String beanID);
-
     Object getBean(String petStore);
 }
