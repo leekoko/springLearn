@@ -1,0 +1,16 @@
+<beans>
+
+    <!--待校验内容-->
+    <bean id="student" class="com.kkb.spring.po.Student">
+        <property name="name" value="studentName"></property>
+        <property name="course" ref="course"></property>
+    </bean>
+
+    <bean id="course" class="com.kkb.spring.po.Course" init-method="init">
+        <property name="name" value="spring"></property>
+        <property name="age" value="18"></property>
+ <!--       <constructor-arg index="0" value="james"/>
+        <constructor-arg index="1" value="18"/>-->
+    </bean>
+
+</beans>
