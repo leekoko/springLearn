@@ -516,15 +516,21 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			// Prepare this context for refreshing.
 			////准备工作包括设置启动时间，是否激活标识位，
 			// 初始化属性源(property source)配置
+			//Step 1：刷新预处理
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
 			//返回一个factory 为什么需要返回一个工厂
 			//因为要对工厂进行初始化
+			//Step 2：
+//				a）创建ioc容器（DefaultListtableBeanFactory）
+//				b)加载解析XML文件（最终存储到Document对象中）
+//				c）读取Document对象，并完成BeanDefinition的加载和注册工作
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
 			//准备工厂
+			//STEP 3：对ioc容器进行一些预处理（设置公共属性）
 			prepareBeanFactory(beanFactory);
 
 			try {
@@ -532,34 +538,42 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				//这个方法在当前版本的spring是没用任何代码的
 				//可能spring期待在后面的版本中去扩展吧
+				//STEP 4：
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
 				//在spring的环境中去执行已经被注册的 factory processors
 				//设置执行自定义的ProcessBeanFactory 和spring内部自己定义的
+				//STEP 5:调用BeanFactoryPostProcessor后置处理器对BeanDefinition处理
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
-				//注册beanPostProcessor
+				//STEP 6:注册beanPostProcessor后置处理器
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
+				//STEP 7:初始化一些消息源（比如处理国际化的i18n等消息源）
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
-				//初始化应用事件广播器
+				//STEP 8:初始化应用事件广播器
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
+				//STEP 9:初始化一些特殊的bean
 				onRefresh();
 
 				// Check for listener beans and register them.
+				//STEP 10:注册一些监听器
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
+				//Bean的IOC、DI和AOP都是发生在此步骤
+				//STEP 11：实例化剩余的单例bean（非懒加载方式）
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
+				//STEP 12:完成刷新时，需要发布对应的事件
 				finishRefresh();
 			}
 
@@ -630,6 +644,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see #getBeanFactory()
 	 */
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
+		//主要是通过该方法完成对IOC容器的刷新
 		refreshBeanFactory();
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
 		if (logger.isDebugEnabled()) {
