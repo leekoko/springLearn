@@ -94,6 +94,8 @@ public abstract class AbstractPropertyAccessor extends TypeConverterSupport impl
 				// This method may throw any BeansException, which won't be caught
 				// here, if there is a critical failure such as no matching field.
 				// We can attempt to deal only with less serious exceptions.
+
+				//依赖属性注入
 				setPropertyValue(pv);
 			}
 			catch (NotWritablePropertyException ex) {

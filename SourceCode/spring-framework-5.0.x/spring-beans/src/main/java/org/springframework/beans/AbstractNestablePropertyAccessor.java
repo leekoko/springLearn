@@ -234,7 +234,7 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 
 	@Override
 	public void setPropertyValue(String propertyName, @Nullable Object value) throws BeansException {
-		AbstractNestablePropertyAccessor nestedPa;
+			AbstractNestablePropertyAccessor nestedPa;
 		try {
 			nestedPa = getPropertyAccessorForPropertyPath(propertyName);
 		}
@@ -263,18 +263,21 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 			if (nestedPa == this) {
 				pv.getOriginalPropertyValue().resolvedTokens = tokens;
 			}
+			//属性注入
 			nestedPa.setPropertyValue(tokens, pv);
 		}
 		else {
+			//属性注入
 			setPropertyValue(tokens, pv);
 		}
 	}
 
 	protected void setPropertyValue(PropertyTokenHolder tokens, PropertyValue pv) throws BeansException {
+		//tokens.keys只要不为空，则表示要依赖的属性是集合类型的属性
 		if (tokens.keys != null) {
 			processKeyedProperty(tokens, pv);
 		}
-		else {
+		else { //设置非集合类型的属性
 			processLocalProperty(tokens, pv);
 		}
 	}
@@ -413,6 +416,7 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 	}
 
 	private void processLocalProperty(PropertyTokenHolder tokens, PropertyValue pv) {
+		//获取属性处理器
 		PropertyHandler ph = getLocalPropertyHandler(tokens.actualName);
 		if (ph == null || !ph.isWritable()) {
 			if (pv.isOptional()) {
@@ -429,6 +433,7 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 
 		Object oldValue = null;
 		try {
+			//获取原始的值
 			Object originalValue = pv.getValue();
 			Object valueToApply = originalValue;
 			if (!Boolean.FALSE.equals(pv.conversionNecessary)) {
@@ -450,11 +455,13 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 							}
 						}
 					}
+					//类型转换
 					valueToApply = convertForProperty(
 							tokens.canonicalName, oldValue, originalValue, ph.toTypeDescriptor());
 				}
 				pv.getOriginalPropertyValue().conversionNecessary = (valueToApply != originalValue);
 			}
+			//通过PropertyHandler去完成依赖注入
 			ph.setValue(valueToApply);
 		}
 		catch (TypeMismatchException ex) {

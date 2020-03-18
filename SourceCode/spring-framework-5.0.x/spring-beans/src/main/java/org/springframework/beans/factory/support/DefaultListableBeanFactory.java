@@ -753,11 +753,13 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		List<String> beanNames = new ArrayList<>(this.beanDefinitionNames);
 
 		// Trigger initialization of all non-lazy singleton beans...
-		// 触发所有非延迟加载单例beans的初始化，主要步骤为调用getBean
+		// 触发所有非延迟加载(非懒加载)单例beans的初始化，主要步骤为调用getBean
 		for (String beanName : beanNames) {
 			//合并父BeanDefinition
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
+			//如果bean不是抽象的，而且是单例的，同时不是懒加载的，进行下面的操作
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
+				//FactoryBean所走逻辑
 				if (isFactoryBean(beanName)) {
 					//如果是FactoryBean则加上&
 					Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
@@ -779,6 +781,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					}
 				}
 				else {
+					//普通Bean所走逻辑
 					getBean(beanName);
 				}
 			}

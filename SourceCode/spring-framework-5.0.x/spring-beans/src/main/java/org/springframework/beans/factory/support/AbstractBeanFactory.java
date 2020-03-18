@@ -196,6 +196,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 	@Override
 	public Object getBean(String name) throws BeansException {
+		//获取Bean的实例
 		return doGetBean(name, null, null, false);
 	}
 
@@ -298,7 +299,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			 */
 			bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		}
-
+		//如果没有获取到单例bean，则走下面代码
 		else {
 			// Fail if we're already creating this bean instance:
 			// We're assumably within a circular reference.
@@ -306,6 +307,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			 * 原型
 			 * 如果是原型不应该在初始化的时候创建
 			 */
+			//如果原型模式的Bean发生循环引用，则直接不处理，抛出异常
 			if (isPrototypeCurrentlyInCreation(beanName)) {
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
@@ -335,7 +337,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 
 			try {
+				//获取实例化的bean的BeanDefinition对象
 				final RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
+				//检查该BeanDefinition对象对应得Bean是否是抽象的
 				checkMergedBeanDefinition(mbd, beanName, args);
 
 				// Guarantee initialization of beans that the current bean depends on.
@@ -358,9 +362,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 
 				// Create bean instance.
+				//如果是单例的Bean，走下面的代码
 				if (mbd.isSingleton()) {
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
+							//创建单例Bean的主要方法
 							return createBean(beanName, mbd, args);
 						}
 						catch (BeansException ex) {
@@ -1043,6 +1049,17 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		return getMergedLocalBeanDefinition(beanName);
 	}
 
+	/**
+	 * 判断是否为FactoryBean
+	 * FactoryBean是IoC容器的一个Bean对象，只是这个Bean对象可以创建指定类型的对象。延迟生产一类型的bean，且可能产生多个实例。
+	 * BeanFactory：是我们的IoC容器，该容器中创建和管理了所有的bean对象
+	 * FactoryBean和BeanFactory的命名规则是不同的：
+	 * 		普通bean的beanName是bean标签中的id或name或class类的简单名称，
+	 * 		FactoryBean的beanName需要在正常的beanName钱，加一个&前缀用于区分
+	 * @param name the name of the bean to check
+	 * @return
+	 * @throws NoSuchBeanDefinitionException
+	 */
 	@Override
 	public boolean isFactoryBean(String name) throws NoSuchBeanDefinitionException {
 		String beanName = transformedBeanName(name);
@@ -1066,6 +1083,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	/**
 	 * Return whether the specified prototype bean is currently in creation
 	 * (within the current thread).
+	 * 循环依赖
+	 * 	 A --> 构造方法初始化 --> B     B --> 构造方法初始化 --> A   这种无法处理
+	 *   A --> set方法 --> B     B --> set方法 --> A    这种可以使用三级缓存处理
 	 * @param beanName the name of the bean
 	 */
 	protected boolean isPrototypeCurrentlyInCreation(String beanName) {
